@@ -457,7 +457,7 @@ const GAMES = {};
 
 /* ---- 1. Yurak X-O ---- */
 GAMES.ttt = { title:'Yurak X-O', emoji:'❤️',
-  init(){ return {board:Array(9).fill(null), turn:'p1', winner:null}; },
+  init(){ return {board:Array(9).fill(""), turn:'p1', winner:""}; },
   mutate(data, myRole, act, val){
     if(act==='place'){
       if(data.winner) return null;
@@ -466,12 +466,12 @@ GAMES.ttt = { title:'Yurak X-O', emoji:'❤️',
       if(data.board[i]) return null;
       const board = data.board.slice(); board[i]=myRole;
       const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-      let winner=null;
+      let winner="";
       for(const L of LINES){ if(board[L[0]] && board[L[0]]===board[L[1]] && board[L[0]]===board[L[2]]){ winner=board[L[0]]; break; } }
       if(!winner && board.every(x=>x)) winner='draw';
       return {board, turn: other(myRole), winner};
     }
-    if(act==='rematch'){ return {board:Array(9).fill(null), turn:'p1', winner:null}; }
+    if(act==='rematch'){ return {board:Array(9).fill(""), turn:'p1', winner:""}; }
     return null;
   },
   render(data, players, myRole){
@@ -493,7 +493,7 @@ GAMES.ttt = { title:'Yurak X-O', emoji:'❤️',
 
 /* ---- 2. To'rt ketma-ket (Connect4) ---- */
 GAMES.c4 = { title:"To'rt ketma-ket", emoji:'🔴',
-  init(){ return {board:Array(42).fill(null), turn:'p1', winner:null, winCells:[]}; },
+  init(){ return {board:Array(42).fill(""), turn:'p1', winner:"", winCells:[]}; },
   mutate(data, myRole, act, val){
     if(act==='drop'){
       if(data.winner) return null;
@@ -505,17 +505,17 @@ GAMES.c4 = { title:"To'rt ketma-ket", emoji:'🔴',
       if(row===-1) return null;
       board[row*7+col]=myRole;
       const res=c4Winner(board);
-      let winner=null, winCells=[];
+      let winner="", winCells=[];
       if(res){ winner=res.winner; winCells=res.cells; }
       return {board, turn:other(myRole), winner, winCells};
     }
-    if(act==='rematch'){ return {board:Array(42).fill(null), turn:'p1', winner:null, winCells:[]}; }
+    if(act==='rematch'){ return {board:Array(42).fill(""), turn:'p1', winner:"", winCells:[]}; }
     return null;
   },
   render(data, players, myRole){
     let cols='';
     for(let c=0;c<7;c++){
-      const full = data.board[c]!=null;
+      const full = !!data.board[c];
       const can = !data.winner && data.turn===myRole && !full;
       let cellsHtml='';
       for(let r=0;r<6;r++){
@@ -553,7 +553,7 @@ function c4Winner(board){
 
 /* ---- 3. Tosh-Qog'oz-Qaychi ---- */
 GAMES.rps = { title:"Tosh-Qog'oz-Qaychi", emoji:'✂️',
-  init(){ return {choices:{p1:null,p2:null}, score:{p1:0,p2:0}, round:1, lastResult:null}; },
+  init(){ return {choices:{p1:"",p2:""}, score:{p1:0,p2:0}, round:1, lastResult:""}; },
   mutate(data, myRole, act, val){
     if(act==='choose'){
       if(data.choices[myRole]) return null;
@@ -570,9 +570,9 @@ GAMES.rps = { title:"Tosh-Qog'oz-Qaychi", emoji:'✂️',
     }
     if(act==='next'){
       if(!(data.choices.p1 && data.choices.p2)) return null;
-      return {...data, choices:{p1:null,p2:null}, round:data.round+1, lastResult:null};
+      return {...data, choices:{p1:"",p2:""}, round:data.round+1, lastResult:""};
     }
-    if(act==='resetScore'){ return {choices:{p1:null,p2:null}, score:{p1:0,p2:0}, round:1, lastResult:null}; }
+    if(act==='resetScore'){ return {choices:{p1:"",p2:""}, score:{p1:0,p2:0}, round:1, lastResult:""}; }
     return null;
   },
   render(data, players, myRole){
@@ -610,8 +610,9 @@ GAMES.memory = { title:"Xotira o'yini", emoji:'🃏',
     if(act==='flip'){
       if(data.turn!==myRole || data.awaitingContinue) return null;
       const i=Number(val);
-      if(data.revealed[i] || data.flipped.includes(i) || data.flipped.length>=2) return null;
-      const flipped=[...data.flipped, i];
+      const curFlipped = data.flipped||[];
+      if(data.revealed[i] || curFlipped.includes(i) || curFlipped.length>=2) return null;
+      const flipped=[...curFlipped, i];
       if(flipped.length===2){
         const [a,b]=flipped;
         if(data.deck[a]===data.deck[b]){
@@ -632,10 +633,11 @@ GAMES.memory = { title:"Xotira o'yini", emoji:'🃏',
   },
   render(data, players, myRole){
     let cells='';
+    const flippedArr = data.flipped||[];
     for(let i=0;i<16;i++){
-      const shown = data.revealed[i] || data.flipped.includes(i);
+      const shown = data.revealed[i] || flippedArr.includes(i);
       const done = data.revealed[i];
-      const can = !done && data.turn===myRole && !data.awaitingContinue && !data.flipped.includes(i) && data.flipped.length<2;
+      const can = !done && data.turn===myRole && !data.awaitingContinue && !flippedArr.includes(i) && flippedArr.length<2;
       cells += '<div class="mem-cell '+(done?'done':'')+' '+(can?'':'disabled')+'" '+(can?'data-act="flip" data-val="'+i+'"':'')+'>'+(shown?data.deck[i]:'❓')+'</div>';
     }
     const finished = data.revealed.every(x=>x);
@@ -658,9 +660,9 @@ GAMES.memory = { title:"Xotira o'yini", emoji:'🃏',
 
 /* ---- 5. Chiziqlar-katakchalar (Dots and Boxes 3x3) ---- */
 GAMES.dab = { title:'Chiziqlar-katakchalar', emoji:'🔲',
-  init(){ return {hEdges:Array(12).fill(null), vEdges:Array(12).fill(null), boxes:Array(9).fill(null), turn:'p1', scores:{p1:0,p2:0}}; },
+  init(){ return {hEdges:Array(12).fill(""), vEdges:Array(12).fill(""), boxes:Array(9).fill(""), turn:'p1', scores:{p1:0,p2:0}}; },
   mutate(data, myRole, act, val){
-    if(act==='rematch'){ return {hEdges:Array(12).fill(null), vEdges:Array(12).fill(null), boxes:Array(9).fill(null), turn:'p1', scores:{p1:0,p2:0}}; }
+    if(act==='rematch'){ return {hEdges:Array(12).fill(""), vEdges:Array(12).fill(""), boxes:Array(9).fill(""), turn:'p1', scores:{p1:0,p2:0}}; }
     if(act!=='hEdge' && act!=='vEdge') return null;
     if(data.turn!==myRole) return null;
     const i=Number(val);
@@ -743,24 +745,25 @@ const DARES=[
  "Ikkovingiz uchun kulgili xotirani eslang va aytib bering."
 ];
 GAMES.tod = { title:'Rost yoki jasorat', emoji:'🎯',
-  init(){ return {turn:'p1', mode:null, prompt:null, usedTruth:[], usedDare:[]}; },
+  init(){ return {turn:'p1', mode:"", prompt:"", usedTruth:[], usedDare:[]}; },
   mutate(data, myRole, act, val){
     if(data.turn!==myRole) return null;
     if(act==='choose'){
       if(data.mode) return null;
       const list = val==='truth'? TRUTHS: DARES;
       const usedKey = val==='truth'?'usedTruth':'usedDare';
-      let avail = list.map((t,i)=>i).filter(i=>!data[usedKey].includes(i));
+      const usedArr = data[usedKey]||[];
+      let avail = list.map((t,i)=>i).filter(i=>!usedArr.includes(i));
       if(avail.length===0) avail = list.map((t,i)=>i);
       const pick = avail[Math.floor(Math.random()*avail.length)];
-      const used=[...data[usedKey], pick];
+      const used=[...usedArr, pick];
       const out={...data, mode:val, prompt:list[pick]};
       out[usedKey]=used;
       return out;
     }
     if(act==='nextTurn'){
       if(!data.mode) return null;
-      return {...data, turn:other(myRole), mode:null, prompt:null};
+      return {...data, turn:other(myRole), mode:"", prompt:""};
     }
     return null;
   },
@@ -796,7 +799,7 @@ const WYR=[
  ["Uyda pishirilgan taom","Restoranga borish"]
 ];
 GAMES.wyr = { title:'Bu yoki u', emoji:'💭',
-  init(){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matches:0}; },
+  init(){ return {index:0, choices:{p1:"",p2:""}, revealed:false, matches:0}; },
   mutate(data, myRole, act, val){
     if(act==='pick'){
       if(data.revealed || data.choices[myRole]) return null;
@@ -807,7 +810,7 @@ GAMES.wyr = { title:'Bu yoki u', emoji:'💭',
     }
     if(act==='next'){
       if(!data.revealed) return null;
-      return {index:(data.index+1)%WYR.length, choices:{p1:null,p2:null}, revealed:false, matches:data.matches};
+      return {index:(data.index+1)%WYR.length, choices:{p1:"",p2:""}, revealed:false, matches:data.matches};
     }
     return null;
   },
@@ -844,7 +847,7 @@ const QUIZ=[
  {q:"Bo'sh vaqtda nima qilishni afzal ko'rasiz?", opts:["Kitob o'qish","Sport","Sayohat"]}
 ];
 GAMES.quiz = { title:'Sevgi viktorinasi', emoji:'💘',
-  init(){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matchCount:0, finished:false}; },
+  init(){ return {index:0, choices:{p1:"",p2:""}, revealed:false, matchCount:0, finished:false}; },
   mutate(data, myRole, act, val){
     if(act==='answer'){
       if(data.finished || data.revealed || data.choices[myRole]) return null;
@@ -857,9 +860,9 @@ GAMES.quiz = { title:'Sevgi viktorinasi', emoji:'💘',
       if(!data.revealed) return null;
       const ni=data.index+1;
       if(ni>=QUIZ.length) return {...data, finished:true};
-      return {index:ni, choices:{p1:null,p2:null}, revealed:false, matchCount:data.matchCount, finished:false};
+      return {index:ni, choices:{p1:"",p2:""}, revealed:false, matchCount:data.matchCount, finished:false};
     }
-    if(act==='restart'){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matchCount:0, finished:false}; }
+    if(act==='restart'){ return {index:0, choices:{p1:"",p2:""}, revealed:false, matchCount:0, finished:false}; }
     return null;
   },
   render(data, players, myRole){
@@ -898,8 +901,9 @@ GAMES.hangman = { title:"So'z top", emoji:'🔤',
     if(data.turn!==myRole) return null;
     if(act!=='guess') return null;
     const letter=String(val).toUpperCase();
-    if(data.guessed.includes(letter)) return null;
-    const guessed=[...data.guessed, letter];
+    const guessedSoFar = data.guessed||[];
+    if(guessedSoFar.includes(letter)) return null;
+    const guessed=[...guessedSoFar, letter];
     let wrong=data.wrong;
     if(!data.word.includes(letter)) wrong++;
     let status='playing';
@@ -908,10 +912,11 @@ GAMES.hangman = { title:"So'z top", emoji:'🔤',
     return {...data, guessed, wrong, status, turn:other(myRole)};
   },
   render(data, players, myRole){
-    const masked = data.word.split('').map(ch=> data.guessed.includes(ch)? ch : '_').join(' ');
+    const guessedArr = data.guessed||[];
+    const masked = data.word.split('').map(ch=> guessedArr.includes(ch)? ch : '_').join(' ');
     const ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
     const keys = ALPHA.map(l=>{
-      const used=data.guessed.includes(l);
+      const used=guessedArr.includes(l);
       const can = data.status==='playing' && data.turn===myRole && !used;
       return '<button class="hm-key" '+(can?'':'disabled')+' '+(can?'data-act="guess" data-val="'+l+'"':'')+'>'+l+'</button>';
     }).join('');
@@ -932,7 +937,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
   mutate(data, myRole, act, val){
     if(act==='stroke'){
       if(myRole!==data.drawer || data.status!=='drawing') return null;
-      return {...data, strokes:[...data.strokes, val]};
+      return {...data, strokes:[...(data.strokes||[]), val]};
     }
     if(act==='clear'){
       if(myRole!==data.drawer) return null;
@@ -942,7 +947,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
       if(myRole===data.drawer || data.status!=='drawing') return null;
       const text=String(val).trim(); if(!text) return null;
       const correct = text.toLowerCase()===data.word.toLowerCase();
-      const guesses=[...data.guesses, {by:myRole, text, correct}];
+      const guesses=[...(data.guesses||[]), {by:myRole, text, correct}];
       return {...data, guesses, status: correct? 'guessed':'drawing'};
     }
     if(act==='newRound'){
@@ -968,7 +973,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
       controls = '<div class="guess-row"><input id="guessInput" type="text" maxlength="24" placeholder="Javobingiz…"><button class="btn-gold" id="guessBtn">Yuborish</button></div>';
     }
     if(data.status==='guessed'){
-      const winner = data.guesses.filter(g=>g.correct).slice(-1)[0];
+      const winner = (data.guesses||[]).filter(g=>g.correct).slice(-1)[0];
       controls += '<div class="status-line">'+(players[winner?winner.by:'']||'')+" topdi! So'z: "+data.word+' 🎉</div>'
         + '<button class="btn-gold" data-act="newRound">Keyingi (rollar almashadi)</button>';
     }
