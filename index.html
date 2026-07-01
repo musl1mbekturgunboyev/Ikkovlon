@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ikkovlon 💕 Onlayn o'yinlar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#3b0d24; --bg2:#6e2148; --bg3:#8a2f5a;
+  --ink:#ffeef3; --ink-dim:#e7b9cb;
+  --p1:#ff5d8f; --p2:#ffcf5c;
+  --gold:#ffcf5c; --card:rgba(255,255,255,0.06); --card-bd:rgba(255,255,255,0.14);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;min-height:100%;
+  background: radial-gradient(ellipse at 20% -10%, var(--bg3), var(--bg2) 45%, var(--bg1) 100%);
+  font-family:'Poppins',sans-serif; color:var(--ink);}
+.wrap{min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:26px 14px 60px;}
+.brand{font-family:'Great Vibes',cursive; font-size:3.2rem; margin:0 0 2px; color:var(--ink);
+  text-shadow:0 0 24px rgba(255,93,143,0.35);}
+.sub{font-size:0.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--ink-dim); margin-bottom:22px;}
+
+.card{background:var(--card); border:1px solid var(--card-bd); border-radius:18px; padding:26px 24px;
+  width:100%; max-width:380px; box-shadow:0 20px 45px rgba(0,0,0,0.35);}
+.field{margin-bottom:15px;}
+.field label{display:block; font-size:0.68rem; letter-spacing:2px; text-transform:uppercase; color:var(--ink-dim); margin-bottom:6px;}
+.field input{width:100%; background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.22);
+  border-radius:10px; padding:12px 14px; color:var(--ink); font-family:'JetBrains Mono',monospace; font-size:1rem; outline:none;}
+.field input:focus{border-color:var(--gold); background:rgba(255,255,255,0.12);}
+.field input::placeholder{color:rgba(255,255,255,0.35);}
+.room-row{display:flex; gap:8px;}
+.room-row input{flex:1; text-transform:uppercase; letter-spacing:3px; text-align:center;}
+.dice-btn{flex-shrink:0; width:44px; background:rgba(255,207,92,0.14); border:1.5px solid rgba(255,207,92,0.4);
+  color:var(--gold); border-radius:10px; font-size:1.05rem; cursor:pointer;}
+.btn-primary{width:100%; margin-top:6px; background:var(--gold); color:#4a1029; border:none; border-radius:12px;
+  padding:13px; font-weight:700; font-size:1rem; cursor:pointer; box-shadow:0 6px 0 rgba(0,0,0,0.22);}
+.btn-primary:disabled{opacity:0.5; cursor:not-allowed;}
+.hint{font-size:0.76rem; color:var(--ink-dim); text-align:center; margin-top:12px; line-height:1.5;}
+.err{color:#ff9d9d; font-size:0.8rem; text-align:center; margin-top:8px; min-height:1em;}
+
+.hidden{display:none !important;}
+
+/* ---- App shell (post-join) ---- */
+.app{width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center;}
+.topbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; justify-content:center;}
+.room-tag{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
+  border-radius:999px; padding:6px 6px 6px 14px; font-family:'JetBrains Mono',monospace; letter-spacing:2px; font-size:0.8rem;}
+.room-tag button, .leave-btn{background:rgba(255,207,92,0.16); border:1px solid rgba(255,207,92,0.4); color:var(--gold);
+  border-radius:999px; padding:5px 12px; font-size:0.68rem; cursor:pointer; font-family:'Poppins',sans-serif;}
+.leave-btn{background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); color:var(--ink);}
+
+.players-row{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;}
+.pchip{display:flex; flex-direction:column; align-items:center; padding:8px 14px; border-radius:14px; min-width:96px;}
+.pchip .m{font-size:1.4rem;}
+.pchip .n{font-size:0.76rem; color:var(--ink-dim); margin-top:2px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.pchip.p1 .m{color:var(--p1);} .pchip.p2 .m{color:var(--p2);}
+.vs{font-family:'Great Vibes',cursive; font-size:1.6rem; color:var(--ink-dim);}
+
+.subhead{display:flex; align-items:center; gap:10px; margin-bottom:8px; width:100%; justify-content:center;}
+.menu-btn{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--ink);
+  border-radius:10px; padding:8px 14px; font-size:0.8rem; cursor:pointer;}
+.game-title{font-family:'Great Vibes',cursive; font-size:1.9rem; color:var(--gold);}
+
+#gameArea{width:100%; display:flex; flex-direction:column; align-items:center;}
+
+.wait-box{background:var(--card); border:1px solid var(--card-bd); border-radius:16px; padding:26px; text-align:center;
+  font-size:0.95rem; line-height:1.7; max-width:340px;}
+
+/* ---- Menu grid ---- */
+.menu-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; width:100%; max-width:420px;}
+.menu-card{background:var(--card); border:1px solid var(--card-bd); border-radius:16px; padding:18px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:transform .12s ease, background .12s ease;}
+.menu-card:hover{transform:translateY(-3px); background:rgba(255,255,255,0.1);}
+.menu-card .em{font-size:1.9rem;}
+.menu-card .t{font-size:0.82rem; text-align:center; font-weight:600; line-height:1.3;}
+
+.status-line{font-family:'Great Vibes',cursive; font-size:1.6rem; margin:6px 0 16px; text-align:center; min-height:1.3em;}
+.status-line.me{color:var(--gold);}
+
+.btn-gold{background:var(--gold); color:#4a1029; border:none; border-radius:10px; padding:10px 18px; font-weight:700; font-size:0.86rem; cursor:pointer; margin-top:14px;}
+.btn-ghost{background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.22); color:var(--ink); border-radius:10px;
+  padding:10px 18px; font-size:0.86rem; cursor:pointer; margin-top:14px; margin-left:8px;}
+
+/* Tic-tac-toe */
+.ttt-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:min(80vw,300px); height:min(80vw,300px);}
+.ttt-cell{background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer;}
+.ttt-cell.disabled{cursor:default;}
+
+/* Connect4 */
+.c4-board{display:flex; gap:6px; background:rgba(0,0,0,0.18); padding:10px; border-radius:16px;}
+.c4-col{display:flex; flex-direction:column-reverse; gap:6px; cursor:pointer; padding:2px; border-radius:10px;}
+.c4-col.disabled{cursor:default;}
+.c4-cell{width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);}
+.c4-cell.p1{background:var(--p1);} .c4-cell.p2{background:var(--p2);}
+.c4-cell.win{box-shadow:0 0 0 3px #fff inset;}
+
+/* RPS */
+.rps-row{display:flex; gap:14px; margin:10px 0;}
+.rps-btn{width:62px; height:62px; border-radius:50%; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2);
+  font-size:1.6rem; cursor:pointer;}
+.rps-btn:disabled{opacity:0.35; cursor:default;}
+.rps-reveal{display:flex; align-items:center; gap:18px; font-size:2.2rem; margin:10px 0;}
+.score-row{font-size:0.85rem; color:var(--ink-dim); margin-top:6px;}
+
+/* Memory */
+.mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:min(88vw,340px);}
+.mem-cell{aspect-ratio:1; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
+  display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer;}
+.mem-cell.done{opacity:0.45; cursor:default;}
+.mem-cell.disabled{cursor:default;}
+
+/* Dots and boxes */
+.dab-wrap svg{width:min(88vw,300px); height:min(88vw,300px);}
+
+/* Truth or dare */
+.tod-card{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:16px;
+  padding:22px; max-width:320px; text-align:center; font-size:1.05rem; line-height:1.6; min-height:80px;
+  display:flex; align-items:center; justify-content:center;}
+.tod-choices{display:flex; gap:12px; margin-top:16px;}
+.tod-btn{background:rgba(255,207,92,0.15); border:1.5px solid rgba(255,207,92,0.45); color:var(--gold);
+  border-radius:12px; padding:12px 22px; font-weight:600; cursor:pointer;}
+.tod-btn:disabled{opacity:0.35; cursor:default;}
+
+/* This or that / quiz */
+.q-text{font-size:1rem; text-align:center; max-width:340px; margin-bottom:14px; line-height:1.5;}
+.opt-col{display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px;}
+.opt-btn{background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); color:var(--ink);
+  border-radius:12px; padding:13px 16px; text-align:left; cursor:pointer; font-size:0.92rem;}
+.opt-btn.picked{border-color:var(--gold); background:rgba(255,207,92,0.12);}
+.opt-btn:disabled{cursor:default;}
+.reveal-box{margin-top:14px; text-align:center; font-size:0.9rem; color:var(--ink-dim);}
+
+/* Hangman */
+.hm-word{font-family:'JetBrains Mono',monospace; font-size:1.6rem; letter-spacing:8px; margin:14px 0;}
+.hm-keys{display:flex; flex-wrap:wrap; gap:6px; max-width:360px; justify-content:center;}
+.hm-key{width:32px; height:36px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+  color:var(--ink); font-size:0.85rem; cursor:pointer;}
+.hm-key:disabled{opacity:0.3; cursor:default;}
+.hm-hearts{font-size:1.1rem; margin-bottom:6px;}
+
+/* Draw */
+.draw-wrap{width:min(90vw,340px);}
+.draw-wrap svg{width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:14px; touch-action:none;}
+.draw-word{font-size:0.95rem; margin-bottom:8px; color:var(--gold);}
+.guess-row{display:flex; gap:8px; margin-top:10px; width:100%;}
+.guess-row input{flex:1; border-radius:10px; border:1.5px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.07);
+  color:var(--ink); padding:10px 12px; font-size:0.9rem;}
+.guess-list{font-size:0.8rem; color:var(--ink-dim); margin-top:10px; max-height:80px; overflow-y:auto; width:100%;}
+
+.toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--gold); color:#4a1029;
+  padding:10px 20px; border-radius:999px; font-size:0.85rem; font-weight:600; z-index:20; box-shadow:0 10px 24px rgba(0,0,0,0.35);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="brand">Ikkovlon 💕</h1>
+  <div class="sub" id="topSub">10 ta o'yin · onlayn birga o'ynang</div>
+
+  <!-- LANDING -->
+  <div class="card" id="landing">
+    <div class="field">
+      <label>Ismingiz</label>
+      <input id="nameInput" type="text" maxlength="16" placeholder="Masalan: Muslimbek">
+    </div>
+    <div class="field">
+      <label>Xona kodi</label>
+      <div class="room-row">
+        <input id="roomInput" type="text" maxlength="5" placeholder="XXXXX">
+        <button class="dice-btn" id="rollBtn" title="Tasodifiy kod">🎲</button>
+      </div>
+    </div>
+    <button class="btn-primary" id="enterBtn">Xonaga kirish 💌</button>
+    <div class="err" id="errMsg"></div>
+    <div class="hint">Shu havolani va xona kodini sevgilingizga yuboring — u ham shu kodni kiritib qo'shilsin.</div>
+  </div>
+
+  <!-- APP -->
+  <div class="app hidden" id="app">
+    <div class="topbar">
+      <div class="room-tag"><span id="roomCodeLabel">XXXXX</span><button id="copyBtn">nusxalash</button></div>
+      <button class="leave-btn" id="leaveBtn">Chiqish</button>
+    </div>
+    <div class="players-row">
+      <div class="pchip p1"><div class="m">❤️</div><div class="n" id="nameP1">—</div></div>
+      <div class="vs">&amp;</div>
+      <div class="pchip p2"><div class="m">💛</div><div class="n" id="nameP2">—</div></div>
+    </div>
+    <div class="subhead hidden" id="subhead">
+      <button class="menu-btn" data-act="backMenu">🏠 Menyu</button>
+      <div class="game-title" id="gameTitleLabel"></div>
+    </div>
+    <div id="gameArea"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- room / connection plumbing ---------------- */
+const landing = document.getElementById('landing');
+const app = document.getElementById('app');
+const nameInput = document.getElementById('nameInput');
+const roomInput = document.getElementById('roomInput');
+const rollBtn = document.getElementById('rollBtn');
+const enterBtn = document.getElementById('enterBtn');
+const errMsg = document.getElementById('errMsg');
+const roomCodeLabel = document.getElementById('roomCodeLabel');
+const copyBtn = document.getElementById('copyBtn');
+const leaveBtn = document.getElementById('leaveBtn');
+const nameP1 = document.getElementById('nameP1');
+const nameP2 = document.getElementById('nameP2');
+const subhead = document.getElementById('subhead');
+const gameTitleLabel = document.getElementById('gameTitleLabel');
+const gameArea = document.getElementById('gameArea');
+
+let roomCode = null, myName = '', myRole = null, pollTimer = null, lastRoomStr = '';
+
+function randRoom(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
+  for(let i=0;i<5;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+rollBtn.addEventListener('click', ()=>{ roomInput.value = randRoom(); });
+
+async function getRoom(){
+  try{ const r = await window.storage.get('room:'+roomCode, true); return r? JSON.parse(r.value): null; }
+  catch(e){ return null; }
+}
+async function setRoom(room){ await window.storage.set('room:'+roomCode, JSON.stringify(room), true); }
+
+function freshRoom(p1name){
+  return { players:{p1:p1name, p2:null}, currentGame:null, data:null };
+}
+
+async function enterRoom(){
+  errMsg.textContent='';
+  const name = nameInput.value.trim();
+  let code = roomInput.value.trim().toUpperCase();
+  if(!name){ errMsg.textContent='Iltimos ismingizni kiriting.'; return; }
+  if(!code){ code = randRoom(); roomInput.value = code; }
+  if(code.length<3){ errMsg.textContent='Xona kodi juda qisqa.'; return; }
+
+  enterBtn.disabled = true; enterBtn.textContent='Ulanmoqda…';
+  try{
+    let room = await getRoom();
+    if(!room){
+      room = freshRoom(name);
+      myRole='p1';
+      await setRoom(room);
+    } else if(room.players.p1===name){
+      myRole='p1';
+    } else if(room.players.p2===name){
+      myRole='p2';
+    } else if(!room.players.p1){
+      room.players.p1=name; myRole='p1'; await setRoom(room);
+    } else if(!room.players.p2){
+      room.players.p2=name; myRole='p2'; await setRoom(room);
+    } else {
+      myRole=null;
+    }
+    roomCode=code; myName=name;
+    startApp(room);
+  }catch(e){
+    console.error(e);
+    errMsg.textContent="Ulanishda xatolik. Qayta urinib ko'ring.";
+    enterBtn.disabled=false; enterBtn.textContent='Xonaga kirish 💌';
+  }
+}
+enterBtn.addEventListener('click', enterRoom);
+nameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') roomInput.focus(); });
+roomInput.addEventListener('keydown', e=>{ if(e.key==='Enter') enterRoom(); });
+
+function startApp(room){
+  landing.classList.add('hidden');
+  app.classList.remove('hidden');
+  roomCodeLabel.textContent = roomCode;
+  lastRoomStr='';
+  renderAll(room);
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async ()=>{
+    const r = await getRoom();
+    if(!r) return;
+    const s = JSON.stringify(r);
+    if(s!==lastRoomStr){ lastRoomStr=s; renderAll(r); }
+  }, 1200);
+}
+
+leaveBtn.addEventListener('click', ()=>{
+  if(pollTimer) clearInterval(pollTimer);
+  app.classList.add('hidden'); landing.classList.remove('hidden');
+  enterBtn.disabled=false; enterBtn.textContent='Xonaga kirish 💌';
+  roomCode=null; myRole=null; lastRoomStr='';
+});
+copyBtn.addEventListener('click', ()=>{
+  const ta=document.createElement('textarea'); ta.value=roomCode; document.body.appendChild(ta);
+  ta.select(); try{ document.execCommand('copy'); showToast('Xona kodi nusxalandi: '+roomCode); }catch(e){}
+  document.body.removeChild(ta);
+});
+function showToast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),1800);
+}
+
+/* ---------------- generic action dispatch ---------------- */
+async function doAction(act, val){
+  if(act==='selectGame'){
+    const room = await getRoom(); if(!room) return;
+    room.currentGame = val;
+    room.data = GAMES[val].init();
+    await setRoom(room); lastRoomStr=JSON.stringify(room); renderAll(room);
+    return;
+  }
+  if(act==='backMenu'){
+    const room = await getRoom(); if(!room) return;
+    room.currentGame = null; room.data = null;
+    await setRoom(room); lastRoomStr=JSON.stringify(room); renderAll(room);
+    return;
+  }
+  if(!myRole) return;
+  const room = await getRoom();
+  if(!room || !room.currentGame) return;
+  const mod = GAMES[room.currentGame];
+  const newData = mod.mutate(room.data, myRole, act, val, room.players);
+  if(newData==null) return;
+  room.data = newData;
+  await setRoom(room);
+  lastRoomStr = JSON.stringify(room);
+  renderAll(room);
+}
+
+gameArea.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]');
+  if(!el) return;
+  doAction(el.dataset.act, el.dataset.val);
+});
+subhead.addEventListener('click', e=>{
+  const el = e.target.closest('[data-act]');
+  if(!el) return;
+  doAction(el.dataset.act, el.dataset.val);
+});
+
+function renderAll(room){
+  nameP1.textContent = room.players.p1 || 'kutilmoqda…';
+  nameP2.textContent = room.players.p2 || 'kutilmoqda…';
+  if(room.currentGame){
+    subhead.classList.remove('hidden');
+    gameTitleLabel.textContent = GAMES[room.currentGame].emoji + ' ' + GAMES[room.currentGame].title;
+  } else {
+    subhead.classList.add('hidden');
+  }
+  gameArea.innerHTML = renderGameArea(room);
+  if(room.currentGame==='draw') attachDrawHandlers(room);
+}
+
+function renderGameArea(room){
+  if(!room.currentGame) return renderMenu();
+  if(!room.players.p1 || !room.players.p2){
+    return '<div class="wait-box">💌 Sherigingiz hali xonaga qo\'shilmadi.<br>Xona kodi <b>'+roomCode+'</b>ni yuboring va u ham shu kodni kiritsin.</div>';
+  }
+  return GAMES[room.currentGame].render(room.data, room.players, myRole);
+}
+
+const MENU_ITEMS = [
+  {id:'ttt', emoji:'❤️', title:'Yurak X-O'},
+  {id:'c4', emoji:'🔴', title:"To'rt ketma-ket"},
+  {id:'rps', emoji:'✂️', title:"Tosh-Qog'oz-Qaychi"},
+  {id:'memory', emoji:'🃏', title:"Xotira o'yini"},
+  {id:'dab', emoji:'🔲', title:'Chiziqlar-katakchalar'},
+  {id:'tod', emoji:'🎯', title:'Rost yoki jasorat'},
+  {id:'wyr', emoji:'💭', title:'Bu yoki u'},
+  {id:'quiz', emoji:'💘', title:'Sevgi viktorinasi'},
+  {id:'hangman', emoji:'🔤', title:"So'z top"},
+  {id:'draw', emoji:'🎨', title:'Chizib top'}
+];
+function renderMenu(){
+  return '<div class="menu-grid">' + MENU_ITEMS.map(it=>
+    '<div class="menu-card" data-act="selectGame" data-val="'+it.id+'"><div class="em">'+it.emoji+'</div><div class="t">'+it.title+'</div></div>'
+  ).join('') + '</div>';
+}
+
+const other = r => r==='p1' ? 'p2' : 'p1';
+
+/* ================= GAME MODULES ================= */
+const GAMES = {};
+
+/* ---- 1. Yurak X-O ---- */
+GAMES.ttt = { title:'Yurak X-O', emoji:'❤️',
+  init(){ return {board:Array(9).fill(null), turn:'p1', winner:null}; },
+  mutate(data, myRole, act, val){
+    if(act==='place'){
+      if(data.winner) return null;
+      if(data.turn!==myRole) return null;
+      const i=Number(val);
+      if(data.board[i]) return null;
+      const board = data.board.slice(); board[i]=myRole;
+      const LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      let winner=null;
+      for(const L of LINES){ if(board[L[0]] && board[L[0]]===board[L[1]] && board[L[0]]===board[L[2]]){ winner=board[L[0]]; break; } }
+      if(!winner && board.every(x=>x)) winner='draw';
+      return {board, turn: other(myRole), winner};
+    }
+    if(act==='rematch'){ return {board:Array(9).fill(null), turn:'p1', winner:null}; }
+    return null;
+  },
+  render(data, players, myRole){
+    const mark = r=> r==='p1' ? '❤️' : '💛';
+    let cells='';
+    for(let i=0;i<9;i++){
+      const v=data.board[i];
+      const can = !data.winner && data.turn===myRole && !v;
+      cells += '<div class="ttt-cell '+(can?'':'disabled')+'" '+(can?'data-act="place" data-val="'+i+'"':'')+'>'+(v?mark(v):'')+'</div>';
+    }
+    let status;
+    if(data.winner==='draw') status="Durrang! 🤍";
+    else if(data.winner) status=(players[data.winner]||'')+" g'olib bo'ldi! 🎉";
+    else status = data.turn===myRole ? 'Sizning navbatingiz 💕' : (players[data.turn]||'Sherik')+' navbati…';
+    return '<div class="status-line '+(data.turn===myRole&&!data.winner?'me':'')+'">'+status+'</div><div class="ttt-grid">'+cells+'</div>'
+      + (data.winner? '<button class="btn-gold" data-act="rematch">Yana o\'ynash</button>':'');
+  }
+};
+
+/* ---- 2. To'rt ketma-ket (Connect4) ---- */
+GAMES.c4 = { title:"To'rt ketma-ket", emoji:'🔴',
+  init(){ return {board:Array(42).fill(null), turn:'p1', winner:null, winCells:[]}; },
+  mutate(data, myRole, act, val){
+    if(act==='drop'){
+      if(data.winner) return null;
+      if(data.turn!==myRole) return null;
+      const col=Number(val);
+      const board=data.board.slice();
+      let row=-1;
+      for(let r=5;r>=0;r--){ if(!board[r*7+col]){ row=r; break; } }
+      if(row===-1) return null;
+      board[row*7+col]=myRole;
+      const res=c4Winner(board);
+      let winner=null, winCells=[];
+      if(res){ winner=res.winner; winCells=res.cells; }
+      return {board, turn:other(myRole), winner, winCells};
+    }
+    if(act==='rematch'){ return {board:Array(42).fill(null), turn:'p1', winner:null, winCells:[]}; }
+    return null;
+  },
+  render(data, players, myRole){
+    let cols='';
+    for(let c=0;c<7;c++){
+      const full = data.board[c]!=null;
+      const can = !data.winner && data.turn===myRole && !full;
+      let cellsHtml='';
+      for(let r=0;r<6;r++){
+        const v=data.board[r*7+c];
+        const isWin = data.winCells && data.winCells.includes(r*7+c);
+        cellsHtml += '<div class="c4-cell '+(v||'')+' '+(isWin?'win':'')+'"></div>';
+      }
+      cols += '<div class="c4-col '+(can?'':'disabled')+'" '+(can?'data-act="drop" data-val="'+c+'"':'')+'>'+cellsHtml+'</div>';
+    }
+    let status;
+    if(data.winner==='draw') status="Durrang! 🤍";
+    else if(data.winner) status=(players[data.winner]||'')+" g'olib bo'ldi! 🎉";
+    else status = data.turn===myRole ? 'Sizning navbatingiz 💕' : (players[data.turn]||'Sherik')+' navbati…';
+    return '<div class="status-line '+(data.turn===myRole&&!data.winner?'me':'')+'">'+status+'</div><div class="c4-board">'+cols+'</div>'
+      + (data.winner? '<button class="btn-gold" data-act="rematch">Yana o\'ynash</button>':'');
+  }
+};
+function c4Winner(board){
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(let r=0;r<6;r++) for(let c=0;c<7;c++){
+    const v=board[r*7+c]; if(!v) continue;
+    for(const d of dirs){
+      const cells=[r*7+c]; let ok=true;
+      for(let k=1;k<4;k++){
+        const nr=r+d[0]*k, nc=c+d[1]*k;
+        if(nr<0||nr>5||nc<0||nc>6||board[nr*7+nc]!==v){ ok=false; break; }
+        cells.push(nr*7+nc);
+      }
+      if(ok) return {winner:v, cells};
+    }
+  }
+  if(board.every(x=>x)) return {winner:'draw', cells:[]};
+  return null;
+}
+
+/* ---- 3. Tosh-Qog'oz-Qaychi ---- */
+GAMES.rps = { title:"Tosh-Qog'oz-Qaychi", emoji:'✂️',
+  init(){ return {choices:{p1:null,p2:null}, score:{p1:0,p2:0}, round:1, lastResult:null}; },
+  mutate(data, myRole, act, val){
+    if(act==='choose'){
+      if(data.choices[myRole]) return null;
+      const choices={...data.choices, [myRole]:val};
+      let lastResult=data.lastResult, score={...data.score};
+      if(choices.p1 && choices.p2){
+        const beats={rock:'scissors',paper:'rock',scissors:'paper'};
+        let w='draw';
+        if(choices.p1!==choices.p2) w = beats[choices.p1]===choices.p2 ? 'p1':'p2';
+        if(w==='p1') score.p1++; else if(w==='p2') score.p2++;
+        lastResult=w;
+      }
+      return {...data, choices, score, lastResult};
+    }
+    if(act==='next'){
+      if(!(data.choices.p1 && data.choices.p2)) return null;
+      return {...data, choices:{p1:null,p2:null}, round:data.round+1, lastResult:null};
+    }
+    if(act==='resetScore'){ return {choices:{p1:null,p2:null}, score:{p1:0,p2:0}, round:1, lastResult:null}; }
+    return null;
+  },
+  render(data, players, myRole){
+    const emo={rock:'🪨',paper:'📄',scissors:'✂️'};
+    const bothChosen = data.choices.p1 && data.choices.p2;
+    let body;
+    if(bothChosen){
+      let resTxt;
+      if(data.lastResult==='draw') resTxt="Durrang! 🤍";
+      else resTxt=(players[data.lastResult]||'')+" g'olib! 🎉";
+      body = '<div class="rps-reveal"><span>'+emo[data.choices.p1]+'</span><span>vs</span><span>'+emo[data.choices.p2]+'</span></div>'
+        + '<div class="status-line">'+resTxt+'</div>'
+        + '<button class="btn-gold" data-act="next">Keyingi tur</button>';
+    } else {
+      const mine = data.choices[myRole];
+      const opts = ['rock','paper','scissors'].map(k=>
+        '<button class="rps-btn" '+(mine?'disabled':'')+' data-act="choose" data-val="'+k+'">'+emo[k]+'</button>').join('');
+      body = '<div class="status-line">'+(mine? "Sherigingiz kutilmoqda…" : 'Birini tanlang')+'</div><div class="rps-row">'+opts+'</div>';
+    }
+    return body + '<div class="score-row">Hisob: '+(players.p1||'P1')+' '+data.score.p1+' — '+data.score.p2+' '+(players.p2||'P2')+' · '+data.round+'-tur</div>'
+      + '<button class="btn-ghost" data-act="resetScore">Hisobni tozalash</button>';
+  }
+};
+
+/* ---- 4. Xotira o'yini ---- */
+const MEM_EMOJIS=['❤️','💋','🌹','💍','🎁','🍫','🥂','🌙'];
+function shuffledDeck(){
+  const arr=[...MEM_EMOJIS,...MEM_EMOJIS];
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+GAMES.memory = { title:"Xotira o'yini", emoji:'🃏',
+  init(){ return {deck:shuffledDeck(), revealed:Array(16).fill(false), flipped:[], turn:'p1', scores:{p1:0,p2:0}, awaitingContinue:false}; },
+  mutate(data, myRole, act, val){
+    if(act==='flip'){
+      if(data.turn!==myRole || data.awaitingContinue) return null;
+      const i=Number(val);
+      if(data.revealed[i] || data.flipped.includes(i) || data.flipped.length>=2) return null;
+      const flipped=[...data.flipped, i];
+      if(flipped.length===2){
+        const [a,b]=flipped;
+        if(data.deck[a]===data.deck[b]){
+          const revealed=data.revealed.slice(); revealed[a]=true; revealed[b]=true;
+          const scores={...data.scores, [myRole]:data.scores[myRole]+1};
+          return {...data, flipped:[], revealed, scores};
+        }
+        return {...data, flipped, awaitingContinue:true};
+      }
+      return {...data, flipped};
+    }
+    if(act==='continue'){
+      if(!data.awaitingContinue) return null;
+      return {...data, flipped:[], awaitingContinue:false, turn:other(data.turn)};
+    }
+    if(act==='rematch'){ return {deck:shuffledDeck(), revealed:Array(16).fill(false), flipped:[], turn:'p1', scores:{p1:0,p2:0}, awaitingContinue:false}; }
+    return null;
+  },
+  render(data, players, myRole){
+    let cells='';
+    for(let i=0;i<16;i++){
+      const shown = data.revealed[i] || data.flipped.includes(i);
+      const done = data.revealed[i];
+      const can = !done && data.turn===myRole && !data.awaitingContinue && !data.flipped.includes(i) && data.flipped.length<2;
+      cells += '<div class="mem-cell '+(done?'done':'')+' '+(can?'':'disabled')+'" '+(can?'data-act="flip" data-val="'+i+'"':'')+'>'+(shown?data.deck[i]:'❓')+'</div>';
+    }
+    const finished = data.revealed.every(x=>x);
+    let status;
+    if(finished){
+      if(data.scores.p1===data.scores.p2) status="Durrang! 🤍";
+      else status=(data.scores.p1>data.scores.p2? players.p1: players.p2)+" ko'proq juftlik topdi! 🎉";
+    } else if(data.awaitingContinue){
+      status='Mos kelmadi — davom eting';
+    } else {
+      status = data.turn===myRole ? 'Sizning navbatingiz 💕' : (players[data.turn]||'Sherik')+' navbati…';
+    }
+    let extra='';
+    if(data.awaitingContinue) extra='<button class="btn-gold" data-act="continue">Davom etish</button>';
+    if(finished) extra='<button class="btn-gold" data-act="rematch">Yana o\'ynash</button>';
+    return '<div class="status-line">'+status+'</div><div class="mem-grid">'+cells+'</div>'
+      + '<div class="score-row">'+(players.p1||'P1')+' '+data.scores.p1+' · '+data.scores.p2+' '+(players.p2||'P2')+'</div>' + extra;
+  }
+};
+
+/* ---- 5. Chiziqlar-katakchalar (Dots and Boxes 3x3) ---- */
+GAMES.dab = { title:'Chiziqlar-katakchalar', emoji:'🔲',
+  init(){ return {hEdges:Array(12).fill(null), vEdges:Array(12).fill(null), boxes:Array(9).fill(null), turn:'p1', scores:{p1:0,p2:0}}; },
+  mutate(data, myRole, act, val){
+    if(act==='rematch'){ return {hEdges:Array(12).fill(null), vEdges:Array(12).fill(null), boxes:Array(9).fill(null), turn:'p1', scores:{p1:0,p2:0}}; }
+    if(act!=='hEdge' && act!=='vEdge') return null;
+    if(data.turn!==myRole) return null;
+    const i=Number(val);
+    const hEdges=data.hEdges.slice(), vEdges=data.vEdges.slice();
+    if(act==='hEdge'){ if(hEdges[i]) return null; hEdges[i]=myRole; }
+    else { if(vEdges[i]) return null; vEdges[i]=myRole; }
+    const boxes=data.boxes.slice(); let completed=false;
+    for(let b=0;b<9;b++){
+      if(boxes[b]) continue;
+      const R=Math.floor(b/3), C=b%3;
+      const top=hEdges[R*3+C], bot=hEdges[(R+1)*3+C], left=vEdges[R*4+C], right=vEdges[R*4+(C+1)];
+      if(top && bot && left && right){ boxes[b]=myRole; completed=true; }
+    }
+    const scores={p1:0,p2:0}; boxes.forEach(o=>{ if(o) scores[o]++; });
+    const turn = completed ? myRole : other(myRole);
+    return {hEdges, vEdges, boxes, turn, scores};
+  },
+  render(data, players, myRole){
+    const unit=68, off=18;
+    let svg='<svg viewBox="0 0 '+(unit*3+off*2)+' '+(unit*3+off*2)+'">';
+    const boxColor = r => r==='p1' ? 'rgba(255,93,143,0.35)' : 'rgba(255,207,92,0.35)';
+    for(let b=0;b<9;b++){
+      const owner=data.boxes[b]; if(!owner) continue;
+      const R=Math.floor(b/3), C=b%3;
+      svg += '<rect x="'+(off+C*unit+6)+'" y="'+(off+R*unit+6)+'" width="'+(unit-12)+'" height="'+(unit-12)+'" rx="6" fill="'+boxColor(owner)+'"/>';
+    }
+    for(let r=0;r<4;r++) for(let c=0;c<3;c++){
+      const idx=r*3+c, owner=data.hEdges[idx];
+      const can = !owner && data.turn===myRole;
+      const x1=off+c*unit, y1=off+r*unit, x2=off+(c+1)*unit, y2=y1;
+      svg += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(owner? (owner==='p1'?'#ff5d8f':'#ffcf5c') : 'rgba(255,255,255,0.25)')+'" stroke-width="8" stroke-linecap="round" '+(can?'data-act="hEdge" data-val="'+idx+'" style="cursor:pointer"':'')+'/>';
+    }
+    for(let r=0;r<3;r++) for(let c=0;c<4;c++){
+      const idx=r*4+c, owner=data.vEdges[idx];
+      const can = !owner && data.turn===myRole;
+      const x1=off+c*unit, y1=off+r*unit, x2=x1, y2=off+(r+1)*unit;
+      svg += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(owner? (owner==='p1'?'#ff5d8f':'#ffcf5c') : 'rgba(255,255,255,0.25)')+'" stroke-width="8" stroke-linecap="round" '+(can?'data-act="vEdge" data-val="'+idx+'" style="cursor:pointer"':'')+'/>';
+    }
+    for(let r=0;r<4;r++) for(let c=0;c<4;c++){
+      svg += '<circle cx="'+(off+c*unit)+'" cy="'+(off+r*unit)+'" r="4" fill="#ffeef3"/>';
+    }
+    svg+='</svg>';
+    const finished = data.boxes.every(x=>x);
+    let status;
+    if(finished){
+      if(data.scores.p1===data.scores.p2) status="Durrang! 🤍";
+      else status=(data.scores.p1>data.scores.p2? players.p1: players.p2)+" g'olib! 🎉";
+    } else {
+      status = data.turn===myRole ? 'Sizning navbatingiz 💕' : (players[data.turn]||'Sherik')+' navbati…';
+    }
+    return '<div class="status-line">'+status+'</div><div class="dab-wrap">'+svg+'</div>'
+      + '<div class="score-row">'+(players.p1||'P1')+' '+data.scores.p1+' · '+data.scores.p2+' '+(players.p2||'P2')+'</div>'
+      + (finished? '<button class="btn-gold" data-act="rematch">Yana o\'ynash</button>':'');
+  }
+};
+
+/* ---- 6. Rost yoki jasorat ---- */
+const TRUTHS=[
+ "Meni birinchi marta ko'rganingizda nima deb o'yladingiz?",
+ "Munosabatimizdagi eng yoqimli xotirangiz qaysi?",
+ "Mendagi qaysi xususiyat sizni ko'proq kuldiradi?",
+ "Birga o'tkazgan eng baxtli kuningiz qaysi edi?",
+ "Mening qaysi odatim sizga eng ko'p yoqadi?",
+ "Kelajakda birga qayerga sayohat qilishni orzu qilasiz?",
+ "Meni sevishingizga sabab bo'lgan bitta lahzani ayting.",
+ "Sizni eng ko'p nima quvontiradi?",
+ "Bizning munosabatimizni bitta so'z bilan ayting.",
+ "Men haqimda hali aytmagan bir sirni ayting."
+];
+const DARES=[
+ "Sherigingizga 3ta iltifot ayting.",
+ "Sevimli qo'shig'ingizdan bir satr kuylab bering.",
+ "Sherigingizga hozir qisqa she'r bag'ishlang.",
+ "Sherigingizni 10 soniya quchoqlang.",
+ "Sherigingizga bir hunaringizni ko'rsating (raqs, qo'shiq va h.k.)",
+ "'Men seni ... uchun yaxshi ko'raman' deb 3ta gap ayting.",
+ "Kelajakdagi orzuingizni tasvirlab bering.",
+ "Xayoliy sovg'a taqdim eting va nima ekanini tushuntiring.",
+ "Sherigingiz ismi bilan boshlanadigan iltifot o'ylab toping.",
+ "Ikkovingiz uchun kulgili xotirani eslang va aytib bering."
+];
+GAMES.tod = { title:'Rost yoki jasorat', emoji:'🎯',
+  init(){ return {turn:'p1', mode:null, prompt:null, usedTruth:[], usedDare:[]}; },
+  mutate(data, myRole, act, val){
+    if(data.turn!==myRole) return null;
+    if(act==='choose'){
+      if(data.mode) return null;
+      const list = val==='truth'? TRUTHS: DARES;
+      const usedKey = val==='truth'?'usedTruth':'usedDare';
+      let avail = list.map((t,i)=>i).filter(i=>!data[usedKey].includes(i));
+      if(avail.length===0) avail = list.map((t,i)=>i);
+      const pick = avail[Math.floor(Math.random()*avail.length)];
+      const used=[...data[usedKey], pick];
+      const out={...data, mode:val, prompt:list[pick]};
+      out[usedKey]=used;
+      return out;
+    }
+    if(act==='nextTurn'){
+      if(!data.mode) return null;
+      return {...data, turn:other(myRole), mode:null, prompt:null};
+    }
+    return null;
+  },
+  render(data, players, myRole){
+    const turnName = players[data.turn]||'Sherik';
+    let body;
+    if(!data.mode){
+      body = '<div class="status-line '+(data.turn===myRole?'me':'')+'">'+(data.turn===myRole? 'Rost yoki jasoratni tanlang' : turnName+' tanlamoqda…')+'</div>'
+        + '<div class="tod-choices">'
+        + '<button class="tod-btn" '+(data.turn===myRole?'':'disabled')+' data-act="choose" data-val="truth">🤍 Rost</button>'
+        + '<button class="tod-btn" '+(data.turn===myRole?'':'disabled')+' data-act="choose" data-val="dare">🔥 Jasorat</button>'
+        + '</div>';
+    } else {
+      body = '<div class="status-line">'+(data.mode==='truth'?'🤍 Rost':'🔥 Jasorat')+'</div>'
+        + '<div class="tod-card">'+data.prompt+'</div>'
+        + (data.turn===myRole? '<button class="btn-gold" data-act="nextTurn">Keyingisi</button>' : '<div class="hint">'+turnName+' bajarmoqda…</div>');
+    }
+    return body;
+  }
+};
+
+/* ---- 7. Bu yoki u ---- */
+const WYR=[
+ ["Dengiz bo'yida dam olish","Tog'da dam olish"],
+ ["Kinoteatr","Uyda kino tomosha qilish"],
+ ["Ertalabki qahva","Kechqurungi choy"],
+ ["Shahar sayohati","Qishloq osoyishtaligi"],
+ ["Romantik kechki ovqat","Tabiatda piknik"],
+ ["Sovg'a — gullar","Sovg'a — shirinlik"],
+ ["Yozgi ta'til","Qishki ta'til"],
+ ["Sokin kechqurun","Faol kechqurun (raqs, o'yin)"],
+ ["Sayohatda mashina","Sayohatda poyezd"],
+ ["Uyda pishirilgan taom","Restoranga borish"]
+];
+GAMES.wyr = { title:'Bu yoki u', emoji:'💭',
+  init(){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matches:0}; },
+  mutate(data, myRole, act, val){
+    if(act==='pick'){
+      if(data.revealed || data.choices[myRole]) return null;
+      const choices={...data.choices,[myRole]:val};
+      let revealed=data.revealed, matches=data.matches;
+      if(choices.p1 && choices.p2){ revealed=true; if(choices.p1===choices.p2) matches++; }
+      return {...data, choices, revealed, matches};
+    }
+    if(act==='next'){
+      if(!data.revealed) return null;
+      return {index:(data.index+1)%WYR.length, choices:{p1:null,p2:null}, revealed:false, matches:data.matches};
+    }
+    return null;
+  },
+  render(data, players, myRole){
+    const pair = WYR[data.index];
+    const mine = data.choices[myRole];
+    let body = '<div class="q-text">'+(data.index+1)+'-savol / '+WYR.length+'</div><div class="opt-col">'
+      + ['a','b'].map((k,idx)=>{
+          const picked = mine===k;
+          return '<button class="opt-btn '+(picked?'picked':'')+'" '+(mine||data.revealed?'disabled':'')+' data-act="pick" data-val="'+k+'">'+pair[idx]+'</button>';
+        }).join('') + '</div>';
+    if(data.revealed){
+      const match = data.choices.p1===data.choices.p2;
+      body += '<div class="reveal-box">'+(players.p1||'P1')+': '+pair[data.choices.p1==='a'?0:1]+'<br>'
+        + (players.p2||'P2')+': '+pair[data.choices.p2==='a'?0:1]+'<br><br>'
+        + (match? '💞 Mos keldi!' : '🤔 Turlicha tanladingiz')+' · Moslik: '+data.matches+'</div>'
+        + '<button class="btn-gold" data-act="next">Keyingi savol</button>';
+    } else if(mine){
+      body += '<div class="hint">Sherigingiz kutilmoqda…</div>';
+    }
+    return body;
+  }
+};
+
+/* ---- 8. Sevgi viktorinasi ---- */
+const QUIZ=[
+ {q:"Ideal kechqurun qanday bo'lishi kerak?", opts:["Kino tomosha qilish","Restoranga borish","Uyda ovqat pishirish"]},
+ {q:"Eng yoqimli mavsum?", opts:["Bahor","Yoz","Qish"]},
+ {q:"Sevimli dam olish turi?", opts:["Tog'","Dengiz","Shahar sayohati"]},
+ {q:"Kim ko'proq sovg'a berishni yaxshi ko'radi?", opts:["Men","Sherigim","Ikkalamiz ham"]},
+ {q:"Nikoh to'yi qanday bo'lishi kerak?", opts:["Katta va shov-shuvli","Kichik va samimiy","Faqat ikkalamiz"]},
+ {q:"Munosabatlarda eng muhim narsa?", opts:["Ishonch","Muhabbat","Hazil-mutoyiba"]},
+ {q:"Uy hayvoni tanlasak?", opts:["Mushuk","It","Boshqasi"]},
+ {q:"Bo'sh vaqtda nima qilishni afzal ko'rasiz?", opts:["Kitob o'qish","Sport","Sayohat"]}
+];
+GAMES.quiz = { title:'Sevgi viktorinasi', emoji:'💘',
+  init(){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matchCount:0, finished:false}; },
+  mutate(data, myRole, act, val){
+    if(act==='answer'){
+      if(data.finished || data.revealed || data.choices[myRole]) return null;
+      const choices={...data.choices,[myRole]:val};
+      let revealed=data.revealed, matchCount=data.matchCount;
+      if(choices.p1 && choices.p2){ revealed=true; if(choices.p1===choices.p2) matchCount++; }
+      return {...data, choices, revealed, matchCount};
+    }
+    if(act==='next'){
+      if(!data.revealed) return null;
+      const ni=data.index+1;
+      if(ni>=QUIZ.length) return {...data, finished:true};
+      return {index:ni, choices:{p1:null,p2:null}, revealed:false, matchCount:data.matchCount, finished:false};
+    }
+    if(act==='restart'){ return {index:0, choices:{p1:null,p2:null}, revealed:false, matchCount:0, finished:false}; }
+    return null;
+  },
+  render(data, players, myRole){
+    if(data.finished){
+      const pct = Math.round(data.matchCount/QUIZ.length*100);
+      let msg = pct>=80? "Siz bir-biringizni juda yaxshi bilasiz! 💞" : pct>=50? "Yaxshi moslik! Davom eting 💕" : "Bir-biringizni yanada ko'proq bilib oling 🌱";
+      return '<div class="status-line">Moslik: '+pct+'%</div><div class="q-text">'+msg+'</div><button class="btn-gold" data-act="restart">Qayta boshlash</button>';
+    }
+    const item = QUIZ[data.index];
+    const mine = data.choices[myRole];
+    let body = '<div class="q-text">'+(data.index+1)+'/'+QUIZ.length+' — '+item.q+'</div><div class="opt-col">'
+      + item.opts.map((o,idx)=>{
+          const k=String(idx);
+          const picked = mine===k;
+          return '<button class="opt-btn '+(picked?'picked':'')+'" '+(mine||data.revealed?'disabled':'')+' data-act="answer" data-val="'+k+'">'+o+'</button>';
+        }).join('') + '</div>';
+    if(data.revealed){
+      const match = data.choices.p1===data.choices.p2;
+      body += '<div class="reveal-box">'+(players.p1||'P1')+': '+item.opts[data.choices.p1]+'<br>'
+        + (players.p2||'P2')+': '+item.opts[data.choices.p2]+'<br><br>'
+        + (match? '💞 Mos keldi!' : '🤔 Turlicha')+'</div><button class="btn-gold" data-act="next">Keyingi savol</button>';
+    } else if(mine){
+      body += '<div class="hint">Sherigingiz kutilmoqda…</div>';
+    }
+    return body;
+  }
+};
+
+/* ---- 9. So'z top (Hangman, hamkorlikda) ---- */
+const HM_WORDS=["SEVGI","MUHABBAT","QALB","BAXT","GUL","OILA","XOTIRA","DIYDOR","ISHONCH","HAYOT"];
+GAMES.hangman = { title:"So'z top", emoji:'🔤',
+  init(){ const word=HM_WORDS[Math.floor(Math.random()*HM_WORDS.length)]; return {word, guessed:[], wrong:0, maxWrong:6, turn:'p1', status:'playing'}; },
+  mutate(data, myRole, act, val){
+    if(act==='restart'){ const word=HM_WORDS[Math.floor(Math.random()*HM_WORDS.length)]; return {word, guessed:[], wrong:0, maxWrong:6, turn:'p1', status:'playing'}; }
+    if(data.status!=='playing') return null;
+    if(data.turn!==myRole) return null;
+    if(act!=='guess') return null;
+    const letter=String(val).toUpperCase();
+    if(data.guessed.includes(letter)) return null;
+    const guessed=[...data.guessed, letter];
+    let wrong=data.wrong;
+    if(!data.word.includes(letter)) wrong++;
+    let status='playing';
+    if(data.word.split('').every(ch=>guessed.includes(ch))) status='won';
+    else if(wrong>=data.maxWrong) status='lost';
+    return {...data, guessed, wrong, status, turn:other(myRole)};
+  },
+  render(data, players, myRole){
+    const masked = data.word.split('').map(ch=> data.guessed.includes(ch)? ch : '_').join(' ');
+    const ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
+    const keys = ALPHA.map(l=>{
+      const used=data.guessed.includes(l);
+      const can = data.status==='playing' && data.turn===myRole && !used;
+      return '<button class="hm-key" '+(can?'':'disabled')+' '+(can?'data-act="guess" data-val="'+l+'"':'')+'>'+l+'</button>';
+    }).join('');
+    let status;
+    if(data.status==='won') status="G'olib bo'ldingiz! So'z: "+data.word+" 🎉";
+    else if(data.status==='lost') status="Afsus… So'z: "+data.word+" 💔";
+    else status = data.turn===myRole ? 'Sizning navbatingiz 💕' : (players[data.turn]||'Sherik')+' navbati…';
+    const hearts = '💔'.repeat(data.wrong) + '🤍'.repeat(data.maxWrong-data.wrong);
+    return '<div class="status-line">'+status+'</div><div class="hm-hearts">'+hearts+'</div><div class="hm-word">'+masked+'</div><div class="hm-keys">'+keys+'</div>'
+      + (data.status!=='playing'? '<button class="btn-gold" data-act="restart">Yana o\'ynash</button>':'');
+  }
+};
+
+/* ---- 10. Chizib top (Pictionary) ---- */
+const DRAW_WORDS=["YURAK","GUL","UZUK","TORT","SHAM","OY","YULDUZ","SOVGA","QUYOSH","MASHINA","UY","KOFE","SHAR"];
+GAMES.draw = { title:'Chizib top', emoji:'🎨',
+  init(){ const word=DRAW_WORDS[Math.floor(Math.random()*DRAW_WORDS.length)]; return {drawer:'p1', word, strokes:[], guesses:[], status:'drawing'}; },
+  mutate(data, myRole, act, val){
+    if(act==='stroke'){
+      if(myRole!==data.drawer || data.status!=='drawing') return null;
+      return {...data, strokes:[...data.strokes, val]};
+    }
+    if(act==='clear'){
+      if(myRole!==data.drawer) return null;
+      return {...data, strokes:[]};
+    }
+    if(act==='guess'){
+      if(myRole===data.drawer || data.status!=='drawing') return null;
+      const text=String(val).trim(); if(!text) return null;
+      const correct = text.toLowerCase()===data.word.toLowerCase();
+      const guesses=[...data.guesses, {by:myRole, text, correct}];
+      return {...data, guesses, status: correct? 'guessed':'drawing'};
+    }
+    if(act==='newRound'){
+      const nd=other(data.drawer);
+      const word=DRAW_WORDS[Math.floor(Math.random()*DRAW_WORDS.length)];
+      return {drawer:nd, word, strokes:[], guesses:[], status:'drawing'};
+    }
+    return null;
+  },
+  render(data, players, myRole){
+    const isDrawer = myRole===data.drawer;
+    let svg='<svg viewBox="0 0 300 300" id="drawSvg">';
+    data.strokes.forEach(stroke=>{
+      const pts = stroke.map(p=>p.x+','+p.y).join(' ');
+      svg += '<polyline points="'+pts+'" fill="none" stroke="#ff5d8f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
+    });
+    svg+='</svg>';
+    let top = isDrawer ? '<div class="draw-word">Chizing: '+data.word+'</div>' : '<div class="draw-word">Rasmni taxmin qiling</div>';
+    let controls='';
+    if(isDrawer){
+      controls = '<button class="btn-ghost" data-act="clear">Tozalash</button>';
+    } else if(data.status==='drawing'){
+      controls = '<div class="guess-row"><input id="guessInput" type="text" maxlength="24" placeholder="Javobingiz…"><button class="btn-gold" id="guessBtn">Yuborish</button></div>';
+    }
+    if(data.status==='guessed'){
+      const winner = data.guesses.filter(g=>g.correct).slice(-1)[0];
+      controls += '<div class="status-line">'+(players[winner?winner.by:'']||'')+" topdi! So'z: "+data.word+' 🎉</div>'
+        + '<button class="btn-gold" data-act="newRound">Keyingi (rollar almashadi)</button>';
+    }
+    const guessList = data.guesses.slice(-5).reverse().map(g=>'<div>'+(players[g.by]||'')+': '+g.text+(g.correct?' ✅':'')+'</div>').join('');
+    return '<div class="status-line">'+(isDrawer? 'Siz chizyapsiz 🎨' : (players[data.drawer]||'Sherik')+' chizyapti…')+'</div>'
+      + top + '<div class="draw-wrap">'+svg+'</div>' + controls + '<div class="guess-list">'+guessList+'</div>';
+  }
+};
+
+function attachDrawHandlers(room){
+  const data = room.data;
+  const svg = document.getElementById('drawSvg');
+  if(svg && myRole===data.drawer && data.status==='drawing'){
+    let drawing=false, pts=[];
+    let tempPoly=null;
+    function getPt(e){
+      const rect=svg.getBoundingClientRect();
+      const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+      const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+      return {x: Math.round(cx/rect.width*300), y: Math.round(cy/rect.height*300)};
+    }
+    function start(e){
+      e.preventDefault();
+      drawing=true; pts=[getPt(e)];
+      tempPoly = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+      tempPoly.setAttribute('fill','none'); tempPoly.setAttribute('stroke','#ff5d8f');
+      tempPoly.setAttribute('stroke-width','6'); tempPoly.setAttribute('stroke-linecap','round'); tempPoly.setAttribute('stroke-linejoin','round');
+      svg.appendChild(tempPoly);
+    }
+    function move(e){
+      if(!drawing) return; e.preventDefault();
+      pts.push(getPt(e));
+      if(tempPoly) tempPoly.setAttribute('points', pts.map(p=>p.x+','+p.y).join(' '));
+    }
+    function end(e){
+      if(!drawing) return;
+      drawing=false;
+      if(pts.length>1) doAction('stroke', pts);
+    }
+    svg.addEventListener('pointerdown', start);
+    svg.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+  }
+  const guessBtn = document.getElementById('guessBtn');
+  if(guessBtn){
+    guessBtn.addEventListener('click', ()=>{
+      const input = document.getElementById('guessInput');
+      if(input && input.value.trim()){ doAction('guess', input.value.trim()); }
+    });
+    const input = document.getElementById('guessInput');
+    if(input) input.addEventListener('keydown', e=>{ if(e.key==='Enter') guessBtn.click(); });
+  }
+}
+
+})();
+</script>
+</body>
+</html>
