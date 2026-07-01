@@ -2,10 +2,12 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ikkovlon 💕 Onlayn o'yinlar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <style>
 :root{
   --bg1:#3b0d24; --bg2:#6e2148; --bg3:#8a2f5a;
@@ -17,12 +19,13 @@
 html,body{margin:0;padding:0;min-height:100%;
   background: radial-gradient(ellipse at 20% -10%, var(--bg3), var(--bg2) 45%, var(--bg1) 100%);
   font-family:'Poppins',sans-serif; color:var(--ink);}
-.wrap{min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:26px 14px 60px;}
-.brand{font-family:'Great Vibes',cursive; font-size:3.2rem; margin:0 0 2px; color:var(--ink);
-  text-shadow:0 0 24px rgba(255,93,143,0.35);}
-.sub{font-size:0.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--ink-dim); margin-bottom:22px;}
+.wrap{min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding: clamp(16px,4vw,32px) 14px 60px;}
+.brand{font-family:'Great Vibes',cursive; font-size:clamp(2.2rem,9vw,3.2rem); margin:0 0 2px; color:var(--ink);
+  text-shadow:0 0 24px rgba(255,93,143,0.35); text-align:center;}
+.sub{font-size:0.7rem; letter-spacing:3px; text-transform:uppercase; color:var(--ink-dim); margin-bottom:22px; text-align:center;}
 
-.card{background:var(--card); border:1px solid var(--card-bd); border-radius:18px; padding:26px 24px;
+.card{background:var(--card); border:1px solid var(--card-bd); border-radius:18px; padding:26px 22px;
   width:100%; max-width:380px; box-shadow:0 20px 45px rgba(0,0,0,0.35);}
 .field{margin-bottom:15px;}
 .field label{display:block; font-size:0.68rem; letter-spacing:2px; text-transform:uppercase; color:var(--ink-dim); margin-bottom:6px;}
@@ -31,7 +34,7 @@ html,body{margin:0;padding:0;min-height:100%;
 .field input:focus{border-color:var(--gold); background:rgba(255,255,255,0.12);}
 .field input::placeholder{color:rgba(255,255,255,0.35);}
 .room-row{display:flex; gap:8px;}
-.room-row input{flex:1; text-transform:uppercase; letter-spacing:3px; text-align:center;}
+.room-row input{flex:1; text-transform:uppercase; letter-spacing:3px; text-align:center; min-width:0;}
 .dice-btn{flex-shrink:0; width:44px; background:rgba(255,207,92,0.14); border:1.5px solid rgba(255,207,92,0.4);
   color:var(--gold); border-radius:10px; font-size:1.05rem; cursor:pointer;}
 .btn-primary{width:100%; margin-top:6px; background:var(--gold); color:#4a1029; border:none; border-radius:12px;
@@ -42,8 +45,17 @@ html,body{margin:0;padding:0;min-height:100%;
 
 .hidden{display:none !important;}
 
-/* ---- App shell (post-join) ---- */
-.app{width:100%; max-width:480px; display:flex; flex-direction:column; align-items:center;}
+/* ---- Setup-required screen ---- */
+.setup-card{background:var(--card); border:1px solid var(--card-bd); border-radius:18px; padding:26px;
+  width:100%; max-width:520px; line-height:1.7; font-size:0.92rem;}
+.setup-card h3{margin:18px 0 6px; color:var(--gold); font-size:1rem;}
+.setup-card ol{padding-left:20px; margin:6px 0;}
+.setup-card code, .setup-card pre{background:rgba(0,0,0,0.35); border-radius:8px; padding:2px 6px; font-family:'JetBrains Mono',monospace; font-size:0.8rem;}
+.setup-card pre{padding:12px; overflow-x:auto; white-space:pre; line-height:1.5;}
+.setup-card a{color:var(--gold);}
+
+/* ---- App shell ---- */
+.app{width:100%; max-width:520px; display:flex; flex-direction:column; align-items:center;}
 .topbar{display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; justify-content:center;}
 .room-tag{display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.16);
   border-radius:999px; padding:6px 6px 6px 14px; font-family:'JetBrains Mono',monospace; letter-spacing:2px; font-size:0.8rem;}
@@ -52,16 +64,16 @@ html,body{margin:0;padding:0;min-height:100%;
 .leave-btn{background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.2); color:var(--ink);}
 
 .players-row{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;}
-.pchip{display:flex; flex-direction:column; align-items:center; padding:8px 14px; border-radius:14px; min-width:96px;}
+.pchip{display:flex; flex-direction:column; align-items:center; padding:8px 14px; border-radius:14px; min-width:88px;}
 .pchip .m{font-size:1.4rem;}
-.pchip .n{font-size:0.76rem; color:var(--ink-dim); margin-top:2px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.pchip .n{font-size:0.74rem; color:var(--ink-dim); margin-top:2px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .pchip.p1 .m{color:var(--p1);} .pchip.p2 .m{color:var(--p2);}
 .vs{font-family:'Great Vibes',cursive; font-size:1.6rem; color:var(--ink-dim);}
 
-.subhead{display:flex; align-items:center; gap:10px; margin-bottom:8px; width:100%; justify-content:center;}
+.subhead{display:flex; align-items:center; gap:10px; margin-bottom:8px; width:100%; justify-content:center; flex-wrap:wrap;}
 .menu-btn{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:var(--ink);
   border-radius:10px; padding:8px 14px; font-size:0.8rem; cursor:pointer;}
-.game-title{font-family:'Great Vibes',cursive; font-size:1.9rem; color:var(--gold);}
+.game-title{font-family:'Great Vibes',cursive; font-size:1.8rem; color:var(--gold); text-align:center;}
 
 #gameArea{width:100%; display:flex; flex-direction:column; align-items:center;}
 
@@ -69,14 +81,15 @@ html,body{margin:0;padding:0;min-height:100%;
   font-size:0.95rem; line-height:1.7; max-width:340px;}
 
 /* ---- Menu grid ---- */
-.menu-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; width:100%; max-width:420px;}
+.menu-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; width:100%; max-width:440px;}
+@media (min-width:640px){ .menu-grid{grid-template-columns:repeat(3,1fr);} }
 .menu-card{background:var(--card); border:1px solid var(--card-bd); border-radius:16px; padding:18px 10px;
   display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; transition:transform .12s ease, background .12s ease;}
 .menu-card:hover{transform:translateY(-3px); background:rgba(255,255,255,0.1);}
 .menu-card .em{font-size:1.9rem;}
-.menu-card .t{font-size:0.82rem; text-align:center; font-weight:600; line-height:1.3;}
+.menu-card .t{font-size:0.8rem; text-align:center; font-weight:600; line-height:1.3;}
 
-.status-line{font-family:'Great Vibes',cursive; font-size:1.6rem; margin:6px 0 16px; text-align:center; min-height:1.3em;}
+.status-line{font-family:'Great Vibes',cursive; font-size:clamp(1.3rem,5vw,1.6rem); margin:6px 0 16px; text-align:center; min-height:1.3em;}
 .status-line.me{color:var(--gold);}
 
 .btn-gold{background:var(--gold); color:#4a1029; border:none; border-radius:10px; padding:10px 18px; font-weight:700; font-size:0.86rem; cursor:pointer; margin-top:14px;}
@@ -86,29 +99,29 @@ html,body{margin:0;padding:0;min-height:100%;
 /* Tic-tac-toe */
 .ttt-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:min(80vw,300px); height:min(80vw,300px);}
 .ttt-cell{background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); border-radius:12px;
-  display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer;}
+  display:flex; align-items:center; justify-content:center; font-size:clamp(1.5rem,7vw,2rem); cursor:pointer;}
 .ttt-cell.disabled{cursor:default;}
 
 /* Connect4 */
-.c4-board{display:flex; gap:6px; background:rgba(0,0,0,0.18); padding:10px; border-radius:16px;}
-.c4-col{display:flex; flex-direction:column-reverse; gap:6px; cursor:pointer; padding:2px; border-radius:10px;}
+.c4-board{display:flex; gap:clamp(3px,1.2vw,6px); background:rgba(0,0,0,0.18); padding:10px; border-radius:16px; max-width:100%; overflow-x:auto;}
+.c4-col{display:flex; flex-direction:column-reverse; gap:clamp(3px,1.2vw,6px); cursor:pointer; padding:2px; border-radius:10px;}
 .c4-col.disabled{cursor:default;}
-.c4-cell{width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);}
+.c4-cell{width:clamp(26px,8vw,34px); height:clamp(26px,8vw,34px); border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);}
 .c4-cell.p1{background:var(--p1);} .c4-cell.p2{background:var(--p2);}
 .c4-cell.win{box-shadow:0 0 0 3px #fff inset;}
 
 /* RPS */
 .rps-row{display:flex; gap:14px; margin:10px 0;}
-.rps-btn{width:62px; height:62px; border-radius:50%; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2);
-  font-size:1.6rem; cursor:pointer;}
+.rps-btn{width:58px; height:58px; border-radius:50%; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.2);
+  font-size:1.5rem; cursor:pointer;}
 .rps-btn:disabled{opacity:0.35; cursor:default;}
-.rps-reveal{display:flex; align-items:center; gap:18px; font-size:2.2rem; margin:10px 0;}
-.score-row{font-size:0.85rem; color:var(--ink-dim); margin-top:6px;}
+.rps-reveal{display:flex; align-items:center; gap:18px; font-size:2rem; margin:10px 0;}
+.score-row{font-size:0.82rem; color:var(--ink-dim); margin-top:6px; text-align:center;}
 
 /* Memory */
 .mem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:min(88vw,340px);}
 .mem-cell{aspect-ratio:1; border-radius:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16);
-  display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer;}
+  display:flex; align-items:center; justify-content:center; font-size:clamp(1.1rem,5vw,1.5rem); cursor:pointer;}
 .mem-cell.done{opacity:0.45; cursor:default;}
 .mem-cell.disabled{cursor:default;}
 
@@ -117,41 +130,46 @@ html,body{margin:0;padding:0;min-height:100%;
 
 /* Truth or dare */
 .tod-card{background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:16px;
-  padding:22px; max-width:320px; text-align:center; font-size:1.05rem; line-height:1.6; min-height:80px;
+  padding:22px; max-width:340px; text-align:center; font-size:clamp(0.92rem,4vw,1.05rem); line-height:1.6; min-height:80px;
   display:flex; align-items:center; justify-content:center;}
-.tod-choices{display:flex; gap:12px; margin-top:16px;}
+.tod-choices{display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; justify-content:center;}
 .tod-btn{background:rgba(255,207,92,0.15); border:1.5px solid rgba(255,207,92,0.45); color:var(--gold);
   border-radius:12px; padding:12px 22px; font-weight:600; cursor:pointer;}
 .tod-btn:disabled{opacity:0.35; cursor:default;}
 
 /* This or that / quiz */
-.q-text{font-size:1rem; text-align:center; max-width:340px; margin-bottom:14px; line-height:1.5;}
-.opt-col{display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px;}
+.q-text{font-size:clamp(0.9rem,3.6vw,1rem); text-align:center; max-width:360px; margin-bottom:14px; line-height:1.5;}
+.opt-col{display:flex; flex-direction:column; gap:10px; width:100%; max-width:340px;}
 .opt-btn{background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.18); color:var(--ink);
-  border-radius:12px; padding:13px 16px; text-align:left; cursor:pointer; font-size:0.92rem;}
+  border-radius:12px; padding:13px 16px; text-align:left; cursor:pointer; font-size:0.9rem;}
 .opt-btn.picked{border-color:var(--gold); background:rgba(255,207,92,0.12);}
 .opt-btn:disabled{cursor:default;}
-.reveal-box{margin-top:14px; text-align:center; font-size:0.9rem; color:var(--ink-dim);}
+.reveal-box{margin-top:14px; text-align:center; font-size:0.88rem; color:var(--ink-dim);}
 
 /* Hangman */
-.hm-word{font-family:'JetBrains Mono',monospace; font-size:1.6rem; letter-spacing:8px; margin:14px 0;}
-.hm-keys{display:flex; flex-wrap:wrap; gap:6px; max-width:360px; justify-content:center;}
-.hm-key{width:32px; height:36px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
-  color:var(--ink); font-size:0.85rem; cursor:pointer;}
+.hm-word{font-family:'JetBrains Mono',monospace; font-size:clamp(1.2rem,6vw,1.6rem); letter-spacing:clamp(4px,2vw,8px); margin:14px 0; word-break:break-all;}
+.hm-keys{display:flex; flex-wrap:wrap; gap:6px; max-width:380px; justify-content:center;}
+.hm-key{width:clamp(26px,7vw,32px); height:36px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+  color:var(--ink); font-size:0.82rem; cursor:pointer;}
 .hm-key:disabled{opacity:0.3; cursor:default;}
-.hm-hearts{font-size:1.1rem; margin-bottom:6px;}
+.hm-hearts{font-size:1.05rem; margin-bottom:6px;}
 
 /* Draw */
-.draw-wrap{width:min(90vw,340px);}
-.draw-wrap svg{width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:14px; touch-action:none;}
-.draw-word{font-size:0.95rem; margin-bottom:8px; color:var(--gold);}
+.draw-wrap{width:min(90vw,360px);}
+.draw-wrap svg{width:100%; aspect-ratio:1/1; display:block; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:14px; touch-action:none;}
+.draw-word{font-size:0.92rem; margin-bottom:8px; color:var(--gold); text-align:center;}
 .guess-row{display:flex; gap:8px; margin-top:10px; width:100%;}
-.guess-row input{flex:1; border-radius:10px; border:1.5px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.07);
+.guess-row input{flex:1; min-width:0; border-radius:10px; border:1.5px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.07);
   color:var(--ink); padding:10px 12px; font-size:0.9rem;}
 .guess-list{font-size:0.8rem; color:var(--ink-dim); margin-top:10px; max-height:80px; overflow-y:auto; width:100%;}
 
 .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--gold); color:#4a1029;
   padding:10px 20px; border-radius:999px; font-size:0.85rem; font-weight:600; z-index:20; box-shadow:0 10px 24px rgba(0,0,0,0.35);}
+
+@media (min-width:900px){
+  .app{max-width:560px;}
+  .setup-card{max-width:640px;}
+}
 </style>
 </head>
 <body>
@@ -159,8 +177,34 @@ html,body{margin:0;padding:0;min-height:100%;
   <h1 class="brand">Ikkovlon 💕</h1>
   <div class="sub" id="topSub">10 ta o'yin · onlayn birga o'ynang</div>
 
+  <!-- SETUP REQUIRED -->
+  <div class="setup-card hidden" id="setupCard">
+    <b>⚙️ Sozlash kerak:</b> bu ilova ma'lumotlarni saqlash uchun bepul Firebase Realtime Database'dan foydalanadi. Hoziroq sozlangan emas — quyidagi qadamlarni bajaring:
+    <h3>1. Firebase loyihasini yarating</h3>
+    <ol>
+      <li><a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> ga kiring va yangi loyiha yarating (bepul).</li>
+      <li>Chap menyudan <b>Build → Realtime Database</b> ni oching, <b>Create Database</b> tugmasini bosing, hududni tanlang va <b>test mode</b>da boshlang.</li>
+      <li><b>Rules</b> bo'limiga o'ting va quyidagini joylashtirib, Publish qiling:</li>
+    </ol>
+    <pre>{
+  "rules": {
+    "rooms": {
+      "$room": { ".read": true, ".write": true }
+    }
+  }
+}</pre>
+    <h3>2. Web ilova sozlamalarini oling</h3>
+    <ol>
+      <li>Loyiha sozlamalari (⚙️) → <b>Your apps</b> → <b>&lt;/&gt; Web</b> belgisini bosib yangi web ilova qo'shing.</li>
+      <li>Ko'rsatilgan <code>firebaseConfig</code> obyektini nusxalab oling.</li>
+    </ol>
+    <h3>3. Fayl ichiga joylashtiring</h3>
+    <p>Shu HTML faylni oching, <code>firebaseConfig</code> deb yozilgan joyni toping (fayl boshida, &lt;script&gt; ichida) va o'zingizning qiymatlaringiz bilan almashtiring, so'ng qayta saqlab Vercel'ga qayta joylashtiring (deploy).</p>
+    <div class="hint">Sozlangandan so'ng bu xabar avtomatik yo'qoladi.</div>
+  </div>
+
   <!-- LANDING -->
-  <div class="card" id="landing">
+  <div class="card hidden" id="landing">
     <div class="field">
       <label>Ismingiz</label>
       <input id="nameInput" type="text" maxlength="16" placeholder="Masalan: Muslimbek">
@@ -200,9 +244,46 @@ html,body{margin:0;padding:0;min-height:100%;
 (function(){
 "use strict";
 
-/* ---------------- room / connection plumbing ---------------- */
+/* =====================================================================
+   FIREBASE CONFIG — buni o'zingizning Firebase loyihangiz qiymatlari
+   bilan almashtiring (Project settings → Your apps → Web app).
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDYxOer7KO2hpgiapU3u4xhv7gC7Ti4K4Q",
+  authDomain: "ikkovlon-4789a.firebaseapp.com",
+  databaseURL: "https://ikkovlon-4789a-default-rtdb.firebaseio.com",
+  projectId: "ikkovlon-4789a",
+  storageBucket: "ikkovlon-4789a.firebasestorage.app",
+  messagingSenderId: "104826687489",
+  appId: "1:104826687489:web:8409d9334b9dd6e4707000",
+  measurementId: "G-57F6HJT7PR"
+};
+/* ===================================================================== */
+
+const FIREBASE_CONFIGURED = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+const setupCard = document.getElementById('setupCard');
 const landing = document.getElementById('landing');
 const app = document.getElementById('app');
+
+let db = null;
+if(FIREBASE_CONFIGURED){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    landing.classList.remove('hidden');
+  }catch(e){
+    console.error(e);
+    setupCard.classList.remove('hidden');
+  }
+} else {
+  setupCard.classList.remove('hidden');
+}
+
+if(!db){ /* stop here if not configured */ }
+else {
+
+/* ---------------- room / connection plumbing ---------------- */
 const nameInput = document.getElementById('nameInput');
 const roomInput = document.getElementById('roomInput');
 const rollBtn = document.getElementById('rollBtn');
@@ -217,7 +298,7 @@ const subhead = document.getElementById('subhead');
 const gameTitleLabel = document.getElementById('gameTitleLabel');
 const gameArea = document.getElementById('gameArea');
 
-let roomCode = null, myName = '', myRole = null, pollTimer = null, lastRoomStr = '';
+let roomCode = null, myName = '', myRole = null, roomListener = null, currentRoomState = null;
 
 function randRoom(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
@@ -225,16 +306,6 @@ function randRoom(){
   return s;
 }
 rollBtn.addEventListener('click', ()=>{ roomInput.value = randRoom(); });
-
-async function getRoom(){
-  try{ const r = await window.storage.get('room:'+roomCode, true); return r? JSON.parse(r.value): null; }
-  catch(e){ return null; }
-}
-async function setRoom(room){ await window.storage.set('room:'+roomCode, JSON.stringify(room), true); }
-
-function freshRoom(p1name){
-  return { players:{p1:p1name, p2:null}, currentGame:null, data:null };
-}
 
 async function enterRoom(){
   errMsg.textContent='';
@@ -246,27 +317,27 @@ async function enterRoom(){
 
   enterBtn.disabled = true; enterBtn.textContent='Ulanmoqda…';
   try{
-    let room = await getRoom();
-    if(!room){
-      room = freshRoom(name);
-      myRole='p1';
-      await setRoom(room);
-    } else if(room.players.p1===name){
-      myRole='p1';
-    } else if(room.players.p2===name){
-      myRole='p2';
-    } else if(!room.players.p1){
-      room.players.p1=name; myRole='p1'; await setRoom(room);
-    } else if(!room.players.p2){
-      room.players.p2=name; myRole='p2'; await setRoom(room);
-    } else {
-      myRole=null;
-    }
+    const ref = db.ref('rooms/'+code);
+    await ref.transaction(current=>{
+      if(current===null) return { players:{p1:name,p2:null}, currentGame:null, data:null };
+      const c = current;
+      if(!c.players) c.players = {p1:null,p2:null};
+      if(c.players.p1===name || c.players.p2===name) return c;
+      if(!c.players.p1){ c.players.p1=name; return c; }
+      if(!c.players.p2){ c.players.p2=name; return c; }
+      return c;
+    });
+    const snap = await ref.once('value');
+    const room = snap.val();
+    if(room.players.p1===name) myRole='p1';
+    else if(room.players.p2===name) myRole='p2';
+    else myRole=null;
+
     roomCode=code; myName=name;
     startApp(room);
   }catch(e){
     console.error(e);
-    errMsg.textContent="Ulanishda xatolik. Qayta urinib ko'ring.";
+    errMsg.textContent="Ulanishda xatolik. Internetni tekshirib qayta urinib ko'ring.";
     enterBtn.disabled=false; enterBtn.textContent='Xonaga kirish 💌';
   }
 }
@@ -278,22 +349,21 @@ function startApp(room){
   landing.classList.add('hidden');
   app.classList.remove('hidden');
   roomCodeLabel.textContent = roomCode;
-  lastRoomStr='';
-  renderAll(room);
-  if(pollTimer) clearInterval(pollTimer);
-  pollTimer = setInterval(async ()=>{
-    const r = await getRoom();
+  if(roomListener) db.ref('rooms/'+roomCode).off('value', roomListener);
+  roomListener = snap=>{
+    const r = snap.val();
     if(!r) return;
-    const s = JSON.stringify(r);
-    if(s!==lastRoomStr){ lastRoomStr=s; renderAll(r); }
-  }, 1200);
+    currentRoomState = r;
+    renderAll(r);
+  };
+  db.ref('rooms/'+roomCode).on('value', roomListener);
 }
 
 leaveBtn.addEventListener('click', ()=>{
-  if(pollTimer) clearInterval(pollTimer);
+  if(roomListener && roomCode) db.ref('rooms/'+roomCode).off('value', roomListener);
   app.classList.add('hidden'); landing.classList.remove('hidden');
   enterBtn.disabled=false; enterBtn.textContent='Xonaga kirish 💌';
-  roomCode=null; myRole=null; lastRoomStr='';
+  roomCode=null; myRole=null; currentRoomState=null;
 });
 copyBtn.addEventListener('click', ()=>{
   const ta=document.createElement('textarea'); ta.value=roomCode; document.body.appendChild(ta);
@@ -308,28 +378,24 @@ function showToast(msg){
 /* ---------------- generic action dispatch ---------------- */
 async function doAction(act, val){
   if(act==='selectGame'){
-    const room = await getRoom(); if(!room) return;
-    room.currentGame = val;
-    room.data = GAMES[val].init();
-    await setRoom(room); lastRoomStr=JSON.stringify(room); renderAll(room);
+    await db.ref('rooms/'+roomCode).update({ currentGame: val, data: GAMES[val].init() });
     return;
   }
   if(act==='backMenu'){
-    const room = await getRoom(); if(!room) return;
-    room.currentGame = null; room.data = null;
-    await setRoom(room); lastRoomStr=JSON.stringify(room); renderAll(room);
+    await db.ref('rooms/'+roomCode).update({ currentGame: null, data: null });
     return;
   }
-  if(!myRole) return;
-  const room = await getRoom();
-  if(!room || !room.currentGame) return;
-  const mod = GAMES[room.currentGame];
-  const newData = mod.mutate(room.data, myRole, act, val, room.players);
-  if(newData==null) return;
-  room.data = newData;
-  await setRoom(room);
-  lastRoomStr = JSON.stringify(room);
-  renderAll(room);
+  if(!myRole || !currentRoomState || !currentRoomState.currentGame) return;
+  const gid = currentRoomState.currentGame;
+  const mod = GAMES[gid];
+  const players = currentRoomState.players;
+  const dataRef = db.ref('rooms/'+roomCode+'/data');
+  await dataRef.transaction(current=>{
+    if(current===null || current===undefined) return; // abort
+    const newData = mod.mutate(current, myRole, act, val, players);
+    if(newData===null) return; // abort - invalid move
+    return newData;
+  });
 }
 
 gameArea.addEventListener('click', e=>{
@@ -344,8 +410,8 @@ subhead.addEventListener('click', e=>{
 });
 
 function renderAll(room){
-  nameP1.textContent = room.players.p1 || 'kutilmoqda…';
-  nameP2.textContent = room.players.p2 || 'kutilmoqda…';
+  nameP1.textContent = (room.players && room.players.p1) || 'kutilmoqda…';
+  nameP2.textContent = (room.players && room.players.p2) || 'kutilmoqda…';
   if(room.currentGame){
     subhead.classList.remove('hidden');
     gameTitleLabel.textContent = GAMES[room.currentGame].emoji + ' ' + GAMES[room.currentGame].title;
@@ -358,10 +424,12 @@ function renderAll(room){
 
 function renderGameArea(room){
   if(!room.currentGame) return renderMenu();
-  if(!room.players.p1 || !room.players.p2){
+  const players = room.players || {};
+  if(!players.p1 || !players.p2){
     return '<div class="wait-box">💌 Sherigingiz hali xonaga qo\'shilmadi.<br>Xona kodi <b>'+roomCode+'</b>ni yuboring va u ham shu kodni kiritsin.</div>';
   }
-  return GAMES[room.currentGame].render(room.data, room.players, myRole);
+  if(!room.data) return '';
+  return GAMES[room.currentGame].render(room.data, players, myRole);
 }
 
 const MENU_ITEMS = [
@@ -887,7 +955,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
   render(data, players, myRole){
     const isDrawer = myRole===data.drawer;
     let svg='<svg viewBox="0 0 300 300" id="drawSvg">';
-    data.strokes.forEach(stroke=>{
+    (data.strokes||[]).forEach(stroke=>{
       const pts = stroke.map(p=>p.x+','+p.y).join(' ');
       svg += '<polyline points="'+pts+'" fill="none" stroke="#ff5d8f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
     });
@@ -904,7 +972,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
       controls += '<div class="status-line">'+(players[winner?winner.by:'']||'')+" topdi! So'z: "+data.word+' 🎉</div>'
         + '<button class="btn-gold" data-act="newRound">Keyingi (rollar almashadi)</button>';
     }
-    const guessList = data.guesses.slice(-5).reverse().map(g=>'<div>'+(players[g.by]||'')+': '+g.text+(g.correct?' ✅':'')+'</div>').join('');
+    const guessList = (data.guesses||[]).slice(-5).reverse().map(g=>'<div>'+(players[g.by]||'')+': '+g.text+(g.correct?' ✅':'')+'</div>').join('');
     return '<div class="status-line">'+(isDrawer? 'Siz chizyapsiz 🎨' : (players[data.drawer]||'Sherik')+' chizyapti…')+'</div>'
       + top + '<div class="draw-wrap">'+svg+'</div>' + controls + '<div class="guess-list">'+guessList+'</div>';
   }
@@ -912,6 +980,7 @@ GAMES.draw = { title:'Chizib top', emoji:'🎨',
 
 function attachDrawHandlers(room){
   const data = room.data;
+  if(!data) return;
   const svg = document.getElementById('drawSvg');
   if(svg && myRole===data.drawer && data.status==='drawing'){
     let drawing=false, pts=[];
@@ -935,7 +1004,7 @@ function attachDrawHandlers(room){
       pts.push(getPt(e));
       if(tempPoly) tempPoly.setAttribute('points', pts.map(p=>p.x+','+p.y).join(' '));
     }
-    function end(e){
+    function end(){
       if(!drawing) return;
       drawing=false;
       if(pts.length>1) doAction('stroke', pts);
@@ -955,6 +1024,7 @@ function attachDrawHandlers(room){
   }
 }
 
+} // end if(db)
 })();
 </script>
 </body>
